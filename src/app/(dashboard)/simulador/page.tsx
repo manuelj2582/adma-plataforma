@@ -1,12 +1,13 @@
 import { createClient } from "@/lib/supabase/server";
 import { SimuladorClient } from "@/components/simulador-client";
+import { PageHeader } from "@/components/page-header";
+import { EmptyState } from "@/components/empty-state";
+import { BookOpen } from "lucide-react";
 import type { Producto } from "@/types";
-import Link from "next/link";
 
 export default async function SimuladorPage() {
   const supabase = await createClient();
 
-  // Solo productos que tengan fórmula vigente
   const { data: productosConFormula } = await supabase
     .from("formulas")
     .select("producto_id, productos(*)")
@@ -20,31 +21,20 @@ export default async function SimuladorPage() {
     .filter((p: Producto | null | undefined): p is Producto => !!p && p.activo);
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-medium tracking-tight">
-          Simulador de viabilidad
-        </h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          Calcula automáticamente qué insumos faltan para producir una cantidad
-          dada
-        </p>
-      </div>
+    <div>
+      <PageHeader
+        title="Simulador de viabilidad"
+        description="Selecciona un producto y cantidad. El sistema calcula los insumos requeridos según la fórmula vigente y los compara contra el stock disponible."
+      />
 
       {productos.length === 0 ? (
-        <div className="bg-amber-50 border border-amber-200 rounded-lg p-6 text-sm">
-          <p className="font-medium text-amber-900">
-            No hay productos con fórmula vigente
-          </p>
-          <p className="text-amber-800 mt-1">
-            Para usar el simulador primero debes definir la fórmula de al menos un
-            producto en la sección{" "}
-            <Link href="/formulas" className="underline">
-              Fórmulas
-            </Link>
-            .
-          </p>
-        </div>
+        <EmptyState
+          icon={BookOpen}
+          title="No hay productos con fórmula vigente"
+          description="Para usar el simulador primero define la fórmula de al menos un producto."
+          actionHref="/formulas"
+          actionLabel="Ir a fórmulas"
+        />
       ) : (
         <SimuladorClient productos={productos} />
       )}

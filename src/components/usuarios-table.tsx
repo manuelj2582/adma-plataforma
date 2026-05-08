@@ -43,32 +43,37 @@ export function UsuariosTable({ perfiles }: UsuariosTableProps) {
   }
 
   return (
-    <div className="bg-card border rounded-lg overflow-hidden">
-      <table className="w-full text-sm">
-        <thead className="bg-muted/50 text-xs uppercase tracking-wide text-muted-foreground">
+    <div className="card overflow-hidden">
+      <table className="data-table">
+        <thead>
           <tr>
-            <th className="text-left px-4 py-3 font-medium">Usuario</th>
-            <th className="text-left px-4 py-3 font-medium">País</th>
-            <th className="text-left px-4 py-3 font-medium">Rol</th>
-            <th className="text-center px-4 py-3 font-medium">Estado</th>
+            <th>Usuario</th>
+            <th>País</th>
+            <th>Rol</th>
+            <th className="text-center">Estado</th>
           </tr>
         </thead>
-        <tbody className="divide-y">
+        <tbody>
           {perfiles.map((p) => (
-            <tr key={p.id} className="hover:bg-muted/30">
-              <td className="px-4 py-3">
-                <div className="font-medium">{p.nombre}</div>
-                <div className="text-xs text-muted-foreground">{p.email}</div>
+            <tr key={p.id}>
+              <td>
+                <div className="flex items-center gap-3">
+                  <div className="h-8 w-8 rounded-full bg-olive-100 text-olive-800 flex items-center justify-center font-medium text-sm shrink-0">
+                    {p.nombre.charAt(0).toUpperCase()}
+                  </div>
+                  <div className="min-w-0">
+                    <div className="font-medium text-ink truncate">{p.nombre}</div>
+                    <div className="text-xs text-ink-mute truncate">{p.email}</div>
+                  </div>
+                </div>
               </td>
-              <td className="px-4 py-3 text-muted-foreground">
-                {PAISES_LABEL[p.pais]}
-              </td>
-              <td className="px-4 py-3">
+              <td className="text-ink-mute text-sm">{PAISES_LABEL[p.pais]}</td>
+              <td>
                 <select
                   value={p.rol}
                   disabled={savingId === p.id}
                   onChange={(e) => cambiarRol(p.id, e.target.value as RolUsuario)}
-                  className="px-2 py-1 text-sm border rounded bg-background"
+                  className="text-sm py-1.5"
                 >
                   {ROLES.map((r) => (
                     <option key={r} value={r}>
@@ -77,15 +82,11 @@ export function UsuariosTable({ perfiles }: UsuariosTableProps) {
                   ))}
                 </select>
               </td>
-              <td className="px-4 py-3 text-center">
+              <td className="text-center">
                 <button
                   onClick={() => toggleActivo(p.id, p.activo)}
                   disabled={savingId === p.id}
-                  className={`px-2 py-0.5 text-xs font-medium rounded ${
-                    p.activo
-                      ? "bg-green-100 text-green-800"
-                      : "bg-gray-100 text-gray-800"
-                  }`}
+                  className={p.activo ? "badge-success" : "badge-neutral"}
                 >
                   {p.activo ? "Activo" : "Inactivo"}
                 </button>

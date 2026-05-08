@@ -1,14 +1,17 @@
 import { ProductoForm } from "@/components/producto-form";
+import { PageHeader } from "@/components/page-header";
 
 export default function NuevoProductoPage() {
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-medium tracking-tight">Nuevo producto</h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          Define un producto terminado
-        </p>
-      </div>
+    <div>
+      <PageHeader
+        breadcrumbs={[
+          { label: "Productos", href: "/productos" },
+          { label: "Nuevo" },
+        ]}
+        title="Nuevo producto"
+        description="Define un producto terminado con su factor de merma y lead time."
+      />
       <ProductoForm />
     </div>
   );

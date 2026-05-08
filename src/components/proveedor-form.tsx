@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { FormSection, Field } from "@/components/form-section";
 import type { Proveedor } from "@/types";
 
 interface ProveedorFormProps {
@@ -54,107 +55,106 @@ export function ProveedorForm({ proveedor }: ProveedorFormProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-5 max-w-2xl">
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label className="block text-sm font-medium mb-1.5">Nombre</label>
-          <input
-            required
-            value={form.nombre}
-            onChange={(e) => setForm({ ...form, nombre: e.target.value })}
-            className="w-full px-3 py-2 text-sm border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-ring"
-            placeholder="Quimanic SA"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium mb-1.5">RUT</label>
-          <input
-            value={form.rut}
-            onChange={(e) => setForm({ ...form, rut: e.target.value })}
-            className="w-full px-3 py-2 text-sm border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-ring"
-            placeholder="76.xxx.xxx-x"
-          />
-        </div>
-      </div>
+    <form onSubmit={handleSubmit}>
+      <div className="card-padded">
+        <FormSection title="Empresa" description="Datos legales del proveedor.">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Field label="Nombre" required>
+              <input
+                required
+                value={form.nombre}
+                onChange={(e) => setForm({ ...form, nombre: e.target.value })}
+                className="w-full"
+                placeholder="Quimanic SA"
+              />
+            </Field>
+            <Field label="RUT">
+              <input
+                value={form.rut}
+                onChange={(e) => setForm({ ...form, rut: e.target.value })}
+                className="w-full font-mono"
+                placeholder="76.xxx.xxx-x"
+              />
+            </Field>
+          </div>
+        </FormSection>
 
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label className="block text-sm font-medium mb-1.5">Contacto</label>
-          <input
-            value={form.contacto_nombre}
-            onChange={(e) => setForm({ ...form, contacto_nombre: e.target.value })}
-            className="w-full px-3 py-2 text-sm border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-ring"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium mb-1.5">
-            Lead time típico (días)
-          </label>
-          <input
-            type="number"
-            min="1"
-            value={form.lead_time_tipico_dias}
-            onChange={(e) =>
-              setForm({
-                ...form,
-                lead_time_tipico_dias: parseInt(e.target.value) || 1,
-              })
-            }
-            className="w-full px-3 py-2 text-sm border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-ring"
-          />
-        </div>
-      </div>
+        <FormSection title="Contacto" description="Persona o email principal de contacto.">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Field label="Nombre del contacto">
+              <input
+                value={form.contacto_nombre}
+                onChange={(e) => setForm({ ...form, contacto_nombre: e.target.value })}
+                className="w-full"
+              />
+            </Field>
+            <Field label="Teléfono">
+              <input
+                value={form.contacto_telefono}
+                onChange={(e) =>
+                  setForm({ ...form, contacto_telefono: e.target.value })
+                }
+                className="w-full"
+              />
+            </Field>
+          </div>
+          <Field label="Email">
+            <input
+              type="email"
+              value={form.contacto_email}
+              onChange={(e) => setForm({ ...form, contacto_email: e.target.value })}
+              className="w-full"
+            />
+          </Field>
+        </FormSection>
 
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label className="block text-sm font-medium mb-1.5">Email contacto</label>
-          <input
-            type="email"
-            value={form.contacto_email}
-            onChange={(e) => setForm({ ...form, contacto_email: e.target.value })}
-            className="w-full px-3 py-2 text-sm border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-ring"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium mb-1.5">Teléfono</label>
-          <input
-            value={form.contacto_telefono}
-            onChange={(e) => setForm({ ...form, contacto_telefono: e.target.value })}
-            className="w-full px-3 py-2 text-sm border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-ring"
-          />
-        </div>
-      </div>
+        <FormSection
+          title="Operación"
+          description="Tiempo típico de respuesta del proveedor desde OC hasta entrega."
+        >
+          <Field label="Lead time típico" hint="Días promedio que demora una compra a este proveedor">
+            <div className="relative max-w-[200px]">
+              <input
+                type="number"
+                min="1"
+                value={form.lead_time_tipico_dias}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    lead_time_tipico_dias: parseInt(e.target.value) || 1,
+                  })
+                }
+                className="w-full pr-12 font-mono tabular-nums text-right"
+              />
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-mute text-sm pointer-events-none">
+                días
+              </span>
+            </div>
+          </Field>
+        </FormSection>
 
-      <div>
-        <label className="block text-sm font-medium mb-1.5">Notas</label>
-        <textarea
-          rows={3}
-          value={form.notas}
-          onChange={(e) => setForm({ ...form, notas: e.target.value })}
-          className="w-full px-3 py-2 text-sm border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-ring"
-        />
+        <FormSection title="Notas">
+          <textarea
+            rows={3}
+            value={form.notas}
+            onChange={(e) => setForm({ ...form, notas: e.target.value })}
+            className="w-full resize-none"
+          />
+        </FormSection>
       </div>
 
       {error && (
-        <div className="p-3 bg-red-50 border border-red-200 text-red-800 text-sm rounded-md">
+        <div className="mt-4 p-3 bg-danger-bg border border-danger-line text-danger-fg text-sm rounded-md">
           {error}
         </div>
       )}
 
-      <div className="flex gap-3">
-        <button
-          type="submit"
-          disabled={loading}
-          className="px-4 py-2 bg-primary text-primary-foreground rounded-md text-sm font-medium hover:opacity-90 disabled:opacity-50"
-        >
-          {loading ? "Guardando..." : proveedor ? "Guardar cambios" : "Crear proveedor"}
-        </button>
-        <button
-          type="button"
-          onClick={() => router.back()}
-          className="px-4 py-2 border rounded-md text-sm font-medium hover:bg-muted"
-        >
+      <div className="flex justify-end gap-3 mt-6">
+        <button type="button" onClick={() => router.back()} className="btn-secondary">
           Cancelar
+        </button>
+        <button type="submit" disabled={loading} className="btn-primary">
+          {loading ? "Guardando..." : proveedor ? "Guardar cambios" : "Crear proveedor"}
         </button>
       </div>
     </form>

@@ -2,8 +2,9 @@
 
 import { useState, useTransition } from "react";
 import { createClient } from "@/lib/supabase/client";
-import type { Producto, AnalisisViabilidad } from "@/types";
 import { useRouter } from "next/navigation";
+import { Calculator, AlertCircle, CheckCircle2, ArrowRight } from "lucide-react";
+import type { Producto, AnalisisViabilidad } from "@/types";
 
 interface SimuladorClientProps {
   productos: Producto[];
@@ -51,7 +52,6 @@ export function SimuladorClient({ productos }: SimuladorClientProps) {
     startTransition(async () => {
       const supabase = createClient();
 
-      // Obtener número correlativo
       const { data: numero, error: numError } = await supabase.rpc(
         "siguiente_numero_cotizacion",
         { p_pais: "CL" }
@@ -62,7 +62,6 @@ export function SimuladorClient({ productos }: SimuladorClientProps) {
         return;
       }
 
-      // Obtener formula vigente para snapshot
       const { data: formula } = await supabase
         .from("formulas")
         .select("id")
@@ -94,57 +93,70 @@ export function SimuladorClient({ productos }: SimuladorClientProps) {
 
   const okCount = resultado?.filter((r) => r.estado === "disponible").length ?? 0;
   const buyCount = resultado?.filter((r) => r.estado === "comprar").length ?? 0;
-  const maxLead = resultado
-    ?.filter((r) => r.estado === "comprar")
-    .reduce((max, r) => Math.max(max, r.lead_time_dias), 0) ?? 0;
+  const maxLead =
+    resultado
+      ?.filter((r) => r.estado === "comprar")
+      .reduce((max, r) => Math.max(max, r.lead_time_dias), 0) ?? 0;
   const insumoCritico = resultado?.find(
     (r) => r.estado === "comprar" && r.lead_time_dias === maxLead
   );
 
   return (
     <div className="space-y-6">
-      <div className="bg-card border rounded-lg p-5 space-y-4">
-        <div>
-          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">
-            Tipo de solicitud
-          </p>
-          <div className="flex">
+      {/* Card de inputs */}
+      <div className="card-padded">
+        {/* Toggle modo */}
+        <div className="mb-6">
+          <p className="section-label mb-2.5">Tipo de solicitud</p>
+          <div className="inline-flex rounded-lg bg-paper-warm p-1 border border-paper-line">
             <button
-              onClick={() => setModo("cotizacion")}
-              className={`flex-1 px-3 py-2 text-sm font-medium rounded-l-md border transition-colors ${
+              onClick={() => {
+                setModo("cotizacion");
+                setResultado(null);
+              }}
+              className={`px-4 py-1.5 text-sm font-medium rounded-md transition-all ${
                 modo === "cotizacion"
-                  ? "bg-primary text-primary-foreground border-primary"
-                  : "bg-background text-muted-foreground hover:bg-muted"
+                  ? "bg-paper-card text-ink shadow-soft"
+                  : "text-ink-mute hover:text-ink"
               }`}
             >
-              Cotización · solo simulación
+              Cotización
             </button>
             <button
-              onClick={() => setModo("pedido")}
-              className={`flex-1 px-3 py-2 text-sm font-medium rounded-r-md border-y border-r transition-colors ${
+              onClick={() => {
+                setModo("pedido");
+                setResultado(null);
+              }}
+              className={`px-4 py-1.5 text-sm font-medium rounded-md transition-all ${
                 modo === "pedido"
-                  ? "bg-primary text-primary-foreground border-primary"
-                  : "bg-background text-muted-foreground hover:bg-muted"
+                  ? "bg-paper-card text-ink shadow-soft"
+                  : "text-ink-mute hover:text-ink"
               }`}
             >
-              Pedido · descuenta reservados
+              Pedido
             </button>
           </div>
+          <p className="text-xs text-ink-mute mt-2 leading-relaxed">
+            {modo === "cotizacion"
+              ? "Solo simulación. No reserva inventario ni descuenta stock."
+              : "Descuenta el stock ya reservado por otros pedidos confirmados."}
+          </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Inputs */}
+        <div className="grid grid-cols-1 md:grid-cols-[2fr_1fr] gap-4">
           <div>
-            <label className="block text-sm font-medium mb-1.5">Producto</label>
+            <label className="block text-sm font-medium text-ink mb-1.5">Producto</label>
             <select
               value={productoId}
               onChange={(e) => {
                 setProductoId(e.target.value);
                 setResultado(null);
               }}
-              className="w-full px-3 py-2 text-sm border rounded-md bg-background"
+              className="w-full"
             >
               {productos.length === 0 ? (
-                <option value="">No hay productos</option>
+                <option value="">No hay productos con fórmula</option>
               ) : (
                 productos.map((p) => (
                   <option key={p.id} value={p.id}>
@@ -155,123 +167,135 @@ export function SimuladorClient({ productos }: SimuladorClientProps) {
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1.5">Unidades</label>
-            <input
-              type="number"
-              min={1}
-              step={100}
-              value={cantidad}
-              onChange={(e) => {
-                setCantidad(Math.max(1, parseInt(e.target.value) || 0));
-                setResultado(null);
-              }}
-              className="w-full px-3 py-2 text-sm border rounded-md bg-background tabular-nums"
-            />
+            <label className="block text-sm font-medium text-ink mb-1.5">Cantidad</label>
+            <div className="relative">
+              <input
+                type="number"
+                min={1}
+                step={100}
+                value={cantidad}
+                onChange={(e) => {
+                  setCantidad(Math.max(1, parseInt(e.target.value) || 0));
+                  setResultado(null);
+                }}
+                className="w-full pr-12 font-mono tabular-nums text-right"
+              />
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-mute text-sm pointer-events-none">
+                unid
+              </span>
+            </div>
           </div>
         </div>
 
         <button
           onClick={simular}
           disabled={!productoId || cantidad <= 0}
-          className="w-full md:w-auto px-4 py-2 bg-primary text-primary-foreground rounded-md text-sm font-medium hover:opacity-90 disabled:opacity-50"
+          className="btn-primary mt-5 w-full md:w-auto"
         >
+          <Calculator className="h-4 w-4" />
           Simular viabilidad
         </button>
       </div>
 
       {error && (
-        <div className="p-3 bg-red-50 border border-red-200 text-red-800 text-sm rounded-md">
-          {error}
+        <div className="p-3 bg-danger-bg border border-danger-line text-danger-fg text-sm rounded-md flex items-start gap-2">
+          <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
+          <span>{error}</span>
         </div>
       )}
 
       {resultado && productoSel && (
-        <>
+        <div className="space-y-6 animate-fade-up">
+          {/* Métricas resultado */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <div className="bg-muted/50 rounded-md p-3">
-              <p className="text-xs text-muted-foreground">A producir (con merma)</p>
-              <p className="text-lg font-medium tabular-nums">
-                {cantidadConMerma.toLocaleString("es-CL")} u
-              </p>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                Merma {(Number(productoSel.factor_merma) * 100).toFixed(1)}%
-              </p>
-            </div>
-            <div className="bg-muted/50 rounded-md p-3">
-              <p className="text-xs text-muted-foreground">Insumos OK</p>
-              <p className="text-lg font-medium text-green-700 tabular-nums">
-                {okCount}
-              </p>
-            </div>
-            <div className="bg-muted/50 rounded-md p-3">
-              <p className="text-xs text-muted-foreground">Por comprar</p>
-              <p className="text-lg font-medium text-red-700 tabular-nums">
-                {buyCount}
-              </p>
-            </div>
-            <div className="bg-muted/50 rounded-md p-3">
-              <p className="text-xs text-muted-foreground">Lead time crítico</p>
-              <p className="text-lg font-medium tabular-nums">
-                {buyCount > 0 ? `${maxLead} días` : "—"}
-              </p>
-            </div>
+            <MetricCard
+              label="A producir"
+              value={`${cantidadConMerma.toLocaleString("es-CL")} u`}
+              hint={`Merma ${(Number(productoSel.factor_merma) * 100).toFixed(1)}%`}
+            />
+            <MetricCard
+              label="Insumos OK"
+              value={String(okCount)}
+              accent={okCount > 0 ? "success" : "neutral"}
+            />
+            <MetricCard
+              label="Por comprar"
+              value={String(buyCount)}
+              accent={buyCount > 0 ? "danger" : "success"}
+            />
+            <MetricCard
+              label="Lead time crítico"
+              value={buyCount > 0 ? `${maxLead} días` : "—"}
+            />
           </div>
 
-          <div className="bg-card border rounded-lg overflow-hidden">
-            <div className="p-4 border-b">
-              <h3 className="font-medium text-sm">Insumos requeridos</h3>
+          {/* Tabla de insumos */}
+          <div className="card overflow-hidden">
+            <div className="px-5 py-4 border-b border-paper-edge">
+              <h3 className="font-medium text-[15px] text-ink">
+                Insumos requeridos
+              </h3>
+              <p className="text-xs text-ink-mute mt-0.5">
+                Cálculo según fórmula vigente y merma del producto
+              </p>
             </div>
-            <table className="w-full text-sm">
-              <thead className="bg-muted/30 text-xs uppercase tracking-wide text-muted-foreground">
+            <table className="data-table">
+              <thead>
                 <tr>
-                  <th className="text-left px-4 py-2 font-medium">Insumo</th>
-                  <th className="text-right px-4 py-2 font-medium">Requerido</th>
-                  <th className="text-right px-4 py-2 font-medium">Disponible</th>
-                  <th className="text-right px-4 py-2 font-medium">Falta</th>
-                  <th className="text-center px-4 py-2 font-medium">Estado</th>
+                  <th>Insumo</th>
+                  <th className="text-right">Requerido</th>
+                  <th className="text-right">Disponible</th>
+                  <th className="text-right">Falta</th>
+                  <th className="text-center">Estado</th>
                 </tr>
               </thead>
-              <tbody className="divide-y">
+              <tbody>
                 {resultado.map((r) => (
                   <tr key={r.insumo_id}>
-                    <td className="px-4 py-2">
-                      <div className="font-medium">{r.insumo_nombre}</div>
-                      <div className="text-xs text-muted-foreground">
-                        {r.proveedor_nombre ?? "Sin proveedor"} · {r.lead_time_dias}{" "}
-                        días
+                    <td>
+                      <div className="font-medium text-ink">{r.insumo_nombre}</div>
+                      <div className="text-xs text-ink-mute mt-0.5">
+                        {r.proveedor_nombre ?? "Sin proveedor"} ·{" "}
+                        <span className="font-mono">{r.lead_time_dias} días</span>
                       </div>
                     </td>
-                    <td className="px-4 py-2 text-right tabular-nums">
-                      {Number(r.cantidad_requerida).toLocaleString("es-CL", {
-                        maximumFractionDigits: 4,
-                      })}{" "}
-                      {r.unidad_medida}
+                    <td className="text-right">
+                      <span className="font-mono text-sm text-ink tabular-nums">
+                        {Number(r.cantidad_requerida).toLocaleString("es-CL", {
+                          maximumFractionDigits: 4,
+                        })}{" "}
+                        {r.unidad_medida}
+                      </span>
                     </td>
-                    <td className="px-4 py-2 text-right tabular-nums text-muted-foreground">
-                      {Number(r.stock_disponible).toLocaleString("es-CL", {
-                        maximumFractionDigits: 4,
-                      })}{" "}
-                      {r.unidad_medida}
+                    <td className="text-right">
+                      <span className="font-mono text-sm text-ink-mute tabular-nums">
+                        {Number(r.stock_disponible).toLocaleString("es-CL", {
+                          maximumFractionDigits: 4,
+                        })}{" "}
+                        {r.unidad_medida}
+                      </span>
                     </td>
-                    <td className="px-4 py-2 text-right tabular-nums">
+                    <td className="text-right">
                       {r.faltante > 0 ? (
-                        <span className="text-red-700 font-medium">
+                        <span className="font-mono text-sm font-medium text-danger-fg tabular-nums">
                           {Number(r.faltante).toLocaleString("es-CL", {
                             maximumFractionDigits: 4,
                           })}{" "}
                           {r.unidad_medida}
                         </span>
                       ) : (
-                        <span className="text-muted-foreground">—</span>
+                        <span className="text-ink-subtle">—</span>
                       )}
                     </td>
-                    <td className="px-4 py-2 text-center">
+                    <td className="text-center">
                       {r.estado === "disponible" ? (
-                        <span className="inline-block px-2 py-0.5 text-xs font-medium bg-green-100 text-green-800 rounded">
+                        <span className="badge-success">
+                          <CheckCircle2 className="h-3 w-3" />
                           Disponible
                         </span>
                       ) : (
-                        <span className="inline-block px-2 py-0.5 text-xs font-medium bg-red-100 text-red-800 rounded">
+                        <span className="badge-danger">
+                          <AlertCircle className="h-3 w-3" />
                           Comprar
                         </span>
                       )}
@@ -282,45 +306,92 @@ export function SimuladorClient({ productos }: SimuladorClientProps) {
             </table>
           </div>
 
+          {/* Resumen y acción */}
           <div
-            className={`p-4 rounded-md text-sm ${
+            className={`rounded-lg p-5 border ${
               buyCount === 0
-                ? "bg-green-50 border border-green-200 text-green-900"
-                : "bg-amber-50 border border-amber-200 text-amber-900"
+                ? "bg-success-bg border-success-line"
+                : "bg-warn-bg border-warn-line"
             }`}
           >
-            {buyCount === 0 ? (
-              <>
-                <p className="font-medium">Viable de inmediato</p>
-                <p className="text-xs mt-1 opacity-90">
-                  Stock suficiente para todos los insumos. Lead time de producción:{" "}
-                  {productoSel.lead_time_produccion_dias} días desde la confirmación.
+            <div className="flex items-start gap-3">
+              {buyCount === 0 ? (
+                <CheckCircle2 className="h-5 w-5 text-success-fg mt-0.5 shrink-0" />
+              ) : (
+                <AlertCircle className="h-5 w-5 text-warn-fg mt-0.5 shrink-0" />
+              )}
+              <div className="flex-1">
+                <p
+                  className={`font-medium text-sm ${
+                    buyCount === 0 ? "text-success-fg" : "text-warn-fg"
+                  }`}
+                >
+                  {buyCount === 0 ? "Viable de inmediato" : "Requiere compra previa"}
                 </p>
-              </>
-            ) : (
-              <>
-                <p className="font-medium">Requiere compra previa</p>
-                <p className="text-xs mt-1 opacity-90">
-                  Insumo crítico: {insumoCritico?.insumo_nombre} ({maxLead} días).
-                  Plazo total estimado: ~
-                  {maxLead + productoSel.lead_time_produccion_dias} días desde la
-                  confirmación.
+                <p
+                  className={`text-xs mt-1 leading-relaxed ${
+                    buyCount === 0 ? "text-success-fg/80" : "text-warn-fg/80"
+                  }`}
+                >
+                  {buyCount === 0 ? (
+                    <>
+                      Stock suficiente para todos los insumos. Lead time de producción:{" "}
+                      <strong>{productoSel.lead_time_produccion_dias} días</strong> desde
+                      la confirmación.
+                    </>
+                  ) : (
+                    <>
+                      Insumo crítico: <strong>{insumoCritico?.insumo_nombre}</strong> (
+                      {maxLead} días). Plazo total estimado: ~
+                      <strong>
+                        {maxLead + productoSel.lead_time_produccion_dias} días
+                      </strong>{" "}
+                      desde la confirmación.
+                    </>
+                  )}
                 </p>
-              </>
-            )}
+              </div>
+            </div>
           </div>
 
-          <div className="flex gap-3">
-            <button
-              onClick={crearCotizacion}
-              disabled={pending}
-              className="px-4 py-2 bg-primary text-primary-foreground rounded-md text-sm font-medium hover:opacity-90 disabled:opacity-50"
-            >
+          {/* CTA crear cotización */}
+          <div className="flex justify-end">
+            <button onClick={crearCotizacion} disabled={pending} className="btn-primary">
               {pending ? "Creando..." : "Crear cotización"}
+              <ArrowRight className="h-4 w-4" />
             </button>
           </div>
-        </>
+        </div>
       )}
+    </div>
+  );
+}
+
+function MetricCard({
+  label,
+  value,
+  hint,
+  accent,
+}: {
+  label: string;
+  value: string;
+  hint?: string;
+  accent?: "success" | "danger" | "neutral";
+}) {
+  const valueClass =
+    accent === "success"
+      ? "text-success-fg"
+      : accent === "danger"
+        ? "text-danger-fg"
+        : "text-ink";
+
+  return (
+    <div className="card p-4">
+      <p className="section-label mb-2">{label}</p>
+      <p className={`font-display text-3xl tracking-tightest tabular-nums leading-none ${valueClass}`}>
+        {value}
+      </p>
+      {hint && <p className="text-[11px] text-ink-mute mt-2">{hint}</p>}
     </div>
   );
 }

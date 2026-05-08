@@ -5,40 +5,83 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        border: "hsl(var(--border))",
-        input: "hsl(var(--input))",
-        ring: "hsl(var(--ring))",
-        background: "hsl(var(--background))",
-        foreground: "hsl(var(--foreground))",
-        primary: {
-          DEFAULT: "hsl(var(--primary))",
-          foreground: "hsl(var(--primary-foreground))",
+        // Paleta principal: piedra cálida + acento oliva
+        ink: {
+          DEFAULT: "#1a1815",
+          soft: "#3a352e",
+          mute: "#6b6358",
+          subtle: "#9a9183",
         },
-        secondary: {
-          DEFAULT: "hsl(var(--secondary))",
-          foreground: "hsl(var(--secondary-foreground))",
+        paper: {
+          DEFAULT: "#fbfaf7",
+          card: "#ffffff",
+          warm: "#f5f2ec",
+          edge: "#ebe7df",
+          line: "#e0dbd1",
         },
-        destructive: {
-          DEFAULT: "hsl(var(--destructive))",
-          foreground: "hsl(var(--destructive-foreground))",
+        // Acento principal: verde oliva profundo
+        olive: {
+          50: "#f6f7f0",
+          100: "#e9ecd8",
+          200: "#d4dab3",
+          300: "#b8c184",
+          400: "#9aa75e",
+          500: "#7d8c45",
+          600: "#5f6c34",
+          700: "#48522a",
+          800: "#3a4225",
+          900: "#323921",
         },
-        muted: {
-          DEFAULT: "hsl(var(--muted))",
-          foreground: "hsl(var(--muted-foreground))",
+        // Acento secundario: ámbar/terracota para alertas
+        amber: {
+          50: "#fdf8ed",
+          100: "#faedcb",
+          400: "#e8a93c",
+          500: "#d68f1f",
+          600: "#b8721a",
+          700: "#925818",
         },
-        accent: {
-          DEFAULT: "hsl(var(--accent))",
-          foreground: "hsl(var(--accent-foreground))",
+        // Estados
+        success: {
+          bg: "#eef2e3",
+          fg: "#48522a",
+          line: "#c5cfa5",
         },
-        card: {
-          DEFAULT: "hsl(var(--card))",
-          foreground: "hsl(var(--card-foreground))",
+        warn: {
+          bg: "#fdf3df",
+          fg: "#925818",
+          line: "#f0d896",
+        },
+        danger: {
+          bg: "#fbeae5",
+          fg: "#9a3412",
+          line: "#f4c2b2",
+        },
+        info: {
+          bg: "#e8eef4",
+          fg: "#1e3a5f",
+          line: "#bdcde0",
         },
       },
+      fontFamily: {
+        display: ["var(--font-display)", "Georgia", "serif"],
+        sans: ["var(--font-sans)", "system-ui", "sans-serif"],
+        mono: ["var(--font-mono)", "ui-monospace", "monospace"],
+      },
+      letterSpacing: {
+        tightest: "-0.04em",
+        tighter: "-0.025em",
+      },
+      boxShadow: {
+        soft: "0 1px 2px rgba(26, 24, 21, 0.04), 0 0 0 0.5px rgba(26, 24, 21, 0.06)",
+        card: "0 1px 2px rgba(26, 24, 21, 0.05), 0 4px 12px -4px rgba(26, 24, 21, 0.08)",
+        lift: "0 4px 12px -2px rgba(26, 24, 21, 0.08), 0 12px 32px -8px rgba(26, 24, 21, 0.12)",
+        inset: "inset 0 0 0 0.5px rgba(26, 24, 21, 0.08)",
+      },
       borderRadius: {
-        lg: "var(--radius)",
-        md: "calc(var(--radius) - 2px)",
-        sm: "calc(var(--radius) - 4px)",
+        lg: "10px",
+        md: "6px",
+        sm: "4px",
       },
     },
   },

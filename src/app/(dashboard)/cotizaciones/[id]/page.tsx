@@ -1,7 +1,13 @@
 import { createClient } from "@/lib/supabase/server";
 import { CotizacionDetalleClient } from "@/components/cotizacion-detalle-client";
+import { PageHeader } from "@/components/page-header";
 import { notFound } from "next/navigation";
-import type { Cliente, Cotizacion, AnalisisViabilidad } from "@/types";
+import {
+  ESTADOS_COTIZACION_LABEL,
+  type Cliente,
+  type Cotizacion,
+  type AnalisisViabilidad,
+} from "@/types";
 
 export default async function CotizacionDetallePage({
   params,
@@ -13,7 +19,9 @@ export default async function CotizacionDetallePage({
 
   const { data: cotizacion } = await supabase
     .from("cotizaciones")
-    .select("*, productos(nombre, presentacion, factor_merma, lead_time_produccion_dias)")
+    .select(
+      "*, productos(nombre, presentacion, factor_merma, lead_time_produccion_dias)"
+    )
     .eq("id", id)
     .single();
 
@@ -25,7 +33,6 @@ export default async function CotizacionDetallePage({
     .eq("activo", true)
     .order("nombre");
 
-  // Re-ejecutar análisis de viabilidad con los datos actuales
   const { data: analisis } = await supabase.rpc("analizar_viabilidad", {
     p_producto_id: cotizacion.producto_id,
     p_cantidad: cotizacion.cantidad,
@@ -40,15 +47,16 @@ export default async function CotizacionDetallePage({
   };
 
   return (
-    <div className="space-y-6">
-      <div>
-        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-          Cotización
-        </p>
-        <h1 className="text-2xl font-medium tracking-tight font-mono">
-          {cotizacion.numero}
-        </h1>
-      </div>
+    <div>
+      <PageHeader
+        breadcrumbs={[
+          { label: "Cotizaciones", href: "/cotizaciones" },
+          { label: cotizacion.numero },
+        ]}
+        label={ESTADOS_COTIZACION_LABEL[cotizacion.estado as keyof typeof ESTADOS_COTIZACION_LABEL]}
+        title={cotizacion.numero}
+        description={`Cotización creada el ${new Date(cotizacion.fecha_cotizacion).toLocaleDateString("es-CL", { day: "numeric", month: "long", year: "numeric" })}.`}
+      />
 
       <CotizacionDetalleClient
         cotizacion={cotizacion as Cotizacion}

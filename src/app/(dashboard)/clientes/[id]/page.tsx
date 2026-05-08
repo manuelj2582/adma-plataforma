@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { ClienteForm } from "@/components/cliente-form";
+import { PageHeader } from "@/components/page-header";
 import { notFound } from "next/navigation";
 import type { Cliente } from "@/types";
 
@@ -19,10 +20,14 @@ export default async function EditarClientePage({
   if (!cliente) notFound();
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-medium tracking-tight">{cliente.nombre}</h1>
-      </div>
+    <div>
+      <PageHeader
+        breadcrumbs={[
+          { label: "Clientes", href: "/clientes" },
+          { label: cliente.nombre },
+        ]}
+        title={cliente.nombre}
+      />
       <ClienteForm cliente={cliente as Cliente} />
     </div>
   );

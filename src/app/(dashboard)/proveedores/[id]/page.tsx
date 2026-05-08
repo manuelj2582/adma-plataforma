@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { ProveedorForm } from "@/components/proveedor-form";
+import { PageHeader } from "@/components/page-header";
 import { notFound } from "next/navigation";
 import type { Proveedor } from "@/types";
 
@@ -19,10 +20,14 @@ export default async function EditarProveedorPage({
   if (!proveedor) notFound();
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-medium tracking-tight">{proveedor.nombre}</h1>
-      </div>
+    <div>
+      <PageHeader
+        breadcrumbs={[
+          { label: "Proveedores", href: "/proveedores" },
+          { label: proveedor.nombre },
+        ]}
+        title={proveedor.nombre}
+      />
       <ProveedorForm proveedor={proveedor as Proveedor} />
     </div>
   );

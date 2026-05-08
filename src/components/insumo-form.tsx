@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { FormSection, Field } from "@/components/form-section";
 import type { Insumo, CategoriaInsumo, Proveedor } from "@/types";
 
 interface InsumoFormProps {
@@ -55,137 +56,148 @@ export function InsumoForm({ insumo, categorias, proveedores }: InsumoFormProps)
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-5 max-w-2xl">
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label className="block text-sm font-medium mb-1.5">Código</label>
-          <input
-            required
-            value={form.codigo}
-            onChange={(e) => setForm({ ...form, codigo: e.target.value })}
-            className="w-full px-3 py-2 text-sm border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-ring"
-            placeholder="INS-001"
+    <form onSubmit={handleSubmit}>
+      <div className="card-padded">
+        <FormSection
+          title="Identificación"
+          description="Código único interno y nombre del insumo."
+        >
+          <div className="grid grid-cols-2 gap-4">
+            <Field label="Código" required>
+              <input
+                required
+                value={form.codigo}
+                onChange={(e) => setForm({ ...form, codigo: e.target.value })}
+                className="w-full font-mono"
+                placeholder="INS-001"
+              />
+            </Field>
+            <Field label="Unidad de medida" required>
+              <select
+                value={form.unidad_medida}
+                onChange={(e) => setForm({ ...form, unidad_medida: e.target.value })}
+                className="w-full"
+              >
+                <option value="kg">Kilogramos (kg)</option>
+                <option value="g">Gramos (g)</option>
+                <option value="L">Litros (L)</option>
+                <option value="ml">Mililitros (ml)</option>
+                <option value="u">Unidades (u)</option>
+              </select>
+            </Field>
+          </div>
+
+          <Field label="Nombre" required>
+            <input
+              required
+              value={form.nombre}
+              onChange={(e) => setForm({ ...form, nombre: e.target.value })}
+              className="w-full"
+              placeholder="Glicerina USP"
+            />
+          </Field>
+        </FormSection>
+
+        <FormSection
+          title="Clasificación"
+          description="Categoría y proveedor habitual de este insumo."
+        >
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Field label="Categoría">
+              <select
+                value={form.categoria_id}
+                onChange={(e) => setForm({ ...form, categoria_id: e.target.value })}
+                className="w-full"
+              >
+                <option value="">Sin categoría</option>
+                {categorias.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.nombre}
+                  </option>
+                ))}
+              </select>
+            </Field>
+            <Field label="Proveedor principal">
+              <select
+                value={form.proveedor_principal_id}
+                onChange={(e) =>
+                  setForm({ ...form, proveedor_principal_id: e.target.value })
+                }
+                className="w-full"
+              >
+                <option value="">Sin proveedor</option>
+                {proveedores.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.nombre}
+                  </option>
+                ))}
+              </select>
+            </Field>
+          </div>
+        </FormSection>
+
+        <FormSection
+          title="Inventario"
+          description="Stock actual en bodega y nivel mínimo para alertar reposición."
+        >
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Field label="Stock actual" hint={`En ${form.unidad_medida}`}>
+              <input
+                type="number"
+                step="0.0001"
+                min="0"
+                value={form.stock_actual}
+                onChange={(e) =>
+                  setForm({ ...form, stock_actual: parseFloat(e.target.value) || 0 })
+                }
+                className="w-full font-mono tabular-nums text-right"
+              />
+            </Field>
+            <Field
+              label="Stock mínimo"
+              hint="El sistema marcará el insumo como bajo stock al cruzar este nivel"
+            >
+              <input
+                type="number"
+                step="0.0001"
+                min="0"
+                value={form.stock_minimo}
+                onChange={(e) =>
+                  setForm({ ...form, stock_minimo: parseFloat(e.target.value) || 0 })
+                }
+                className="w-full font-mono tabular-nums text-right"
+              />
+            </Field>
+          </div>
+        </FormSection>
+
+        <FormSection title="Notas" description="Información adicional sobre el insumo.">
+          <textarea
+            rows={3}
+            value={form.notas}
+            onChange={(e) => setForm({ ...form, notas: e.target.value })}
+            className="w-full resize-none"
+            placeholder="Observaciones, alternativas, condiciones de almacenamiento..."
           />
-        </div>
-        <div>
-          <label className="block text-sm font-medium mb-1.5">Unidad de medida</label>
-          <select
-            value={form.unidad_medida}
-            onChange={(e) => setForm({ ...form, unidad_medida: e.target.value })}
-            className="w-full px-3 py-2 text-sm border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-ring"
-          >
-            <option value="kg">kg (kilogramos)</option>
-            <option value="g">g (gramos)</option>
-            <option value="L">L (litros)</option>
-            <option value="ml">ml (mililitros)</option>
-            <option value="u">u (unidades)</option>
-          </select>
-        </div>
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium mb-1.5">Nombre</label>
-        <input
-          required
-          value={form.nombre}
-          onChange={(e) => setForm({ ...form, nombre: e.target.value })}
-          className="w-full px-3 py-2 text-sm border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-ring"
-          placeholder="Glicerina USP"
-        />
-      </div>
-
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label className="block text-sm font-medium mb-1.5">Categoría</label>
-          <select
-            value={form.categoria_id}
-            onChange={(e) => setForm({ ...form, categoria_id: e.target.value })}
-            className="w-full px-3 py-2 text-sm border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-ring"
-          >
-            <option value="">Sin categoría</option>
-            {categorias.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.nombre}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div>
-          <label className="block text-sm font-medium mb-1.5">Proveedor principal</label>
-          <select
-            value={form.proveedor_principal_id}
-            onChange={(e) =>
-              setForm({ ...form, proveedor_principal_id: e.target.value })
-            }
-            className="w-full px-3 py-2 text-sm border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-ring"
-          >
-            <option value="">Sin proveedor</option>
-            {proveedores.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.nombre}
-              </option>
-            ))}
-          </select>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label className="block text-sm font-medium mb-1.5">Stock actual</label>
-          <input
-            type="number"
-            step="0.0001"
-            value={form.stock_actual}
-            onChange={(e) =>
-              setForm({ ...form, stock_actual: parseFloat(e.target.value) || 0 })
-            }
-            className="w-full px-3 py-2 text-sm border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-ring"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium mb-1.5">Stock mínimo</label>
-          <input
-            type="number"
-            step="0.0001"
-            value={form.stock_minimo}
-            onChange={(e) =>
-              setForm({ ...form, stock_minimo: parseFloat(e.target.value) || 0 })
-            }
-            className="w-full px-3 py-2 text-sm border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-ring"
-          />
-        </div>
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium mb-1.5">Notas</label>
-        <textarea
-          rows={3}
-          value={form.notas}
-          onChange={(e) => setForm({ ...form, notas: e.target.value })}
-          className="w-full px-3 py-2 text-sm border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-ring"
-        />
+        </FormSection>
       </div>
 
       {error && (
-        <div className="p-3 bg-red-50 border border-red-200 text-red-800 text-sm rounded-md">
+        <div className="mt-4 p-3 bg-danger-bg border border-danger-line text-danger-fg text-sm rounded-md">
           {error}
         </div>
       )}
 
-      <div className="flex gap-3">
-        <button
-          type="submit"
-          disabled={loading}
-          className="px-4 py-2 bg-primary text-primary-foreground rounded-md text-sm font-medium hover:opacity-90 disabled:opacity-50"
-        >
-          {loading ? "Guardando..." : insumo ? "Guardar cambios" : "Crear insumo"}
-        </button>
+      <div className="flex justify-end gap-3 mt-6">
         <button
           type="button"
           onClick={() => router.back()}
-          className="px-4 py-2 border rounded-md text-sm font-medium hover:bg-muted"
+          className="btn-secondary"
         >
           Cancelar
+        </button>
+        <button type="submit" disabled={loading} className="btn-primary">
+          {loading ? "Guardando..." : insumo ? "Guardar cambios" : "Crear insumo"}
         </button>
       </div>
     </form>

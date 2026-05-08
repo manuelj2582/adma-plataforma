@@ -1,14 +1,17 @@
 import { ProveedorForm } from "@/components/proveedor-form";
+import { PageHeader } from "@/components/page-header";
 
 export default function NuevoProveedorPage() {
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-medium tracking-tight">Nuevo proveedor</h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          Registra una empresa proveedora
-        </p>
-      </div>
+    <div>
+      <PageHeader
+        breadcrumbs={[
+          { label: "Proveedores", href: "/proveedores" },
+          { label: "Nuevo" },
+        ]}
+        title="Nuevo proveedor"
+        description="Registra una empresa proveedora con su lead time típico."
+      />
       <ProveedorForm />
     </div>
   );

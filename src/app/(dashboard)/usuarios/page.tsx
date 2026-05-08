@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { UsuariosTable } from "@/components/usuarios-table";
+import { PageHeader } from "@/components/page-header";
 import type { Perfil } from "@/types";
 
 export default async function UsuariosPage() {
@@ -23,14 +24,12 @@ export default async function UsuariosPage() {
     .order("nombre");
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-medium tracking-tight">Usuarios</h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          Gestiona los roles del equipo. Para crear nuevos usuarios usa
-          Authentication → Users en Supabase, luego asígnales rol aquí.
-        </p>
-      </div>
+    <div>
+      <PageHeader
+        label="Admin"
+        title="Usuarios"
+        description="Gestiona los roles del equipo. Para crear nuevos usuarios usa Authentication → Users en Supabase, luego asígnales rol aquí."
+      />
       <UsuariosTable perfiles={(perfiles as Perfil[]) ?? []} />
     </div>
   );

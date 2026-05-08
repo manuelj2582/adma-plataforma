@@ -1,15 +1,17 @@
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
-import { Calculator } from "lucide-react";
+import { Calculator, ClipboardList } from "lucide-react";
+import { PageHeader } from "@/components/page-header";
+import { EmptyState } from "@/components/empty-state";
 import { ESTADOS_COTIZACION_LABEL } from "@/types";
 
 const ESTADO_BADGE: Record<string, string> = {
-  borrador: "bg-gray-100 text-gray-800",
-  enviada: "bg-blue-100 text-blue-800",
-  aprobada: "bg-green-100 text-green-800",
-  convertida: "bg-purple-100 text-purple-800",
-  rechazada: "bg-red-100 text-red-800",
-  expirada: "bg-amber-100 text-amber-800",
+  borrador: "badge-neutral",
+  enviada: "badge-info",
+  aprobada: "badge-success",
+  convertida: "badge-info",
+  rechazada: "badge-danger",
+  expirada: "badge-warn",
 };
 
 export default async function CotizacionesPage() {
@@ -21,89 +23,97 @@ export default async function CotizacionesPage() {
     .order("creado_en", { ascending: false });
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-medium tracking-tight">Cotizaciones</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Solicitudes de cotización a clientes
-          </p>
-        </div>
-        <Link
-          href="/simulador"
-          className="inline-flex items-center gap-1.5 px-3 py-2 bg-primary text-primary-foreground rounded-md text-sm font-medium hover:opacity-90"
-        >
-          <Calculator className="h-4 w-4" /> Nueva cotización
-        </Link>
-      </div>
+    <div>
+      <PageHeader
+        title="Cotizaciones"
+        description="Solicitudes de cotización a clientes con su estado actual."
+        action={
+          <Link href="/simulador" className="btn-primary">
+            <Calculator className="h-4 w-4" /> Nueva cotización
+          </Link>
+        }
+      />
 
-      <div className="bg-card border rounded-lg overflow-hidden">
-        <table className="w-full text-sm">
-          <thead className="bg-muted/50 text-xs uppercase tracking-wide text-muted-foreground">
-            <tr>
-              <th className="text-left px-4 py-3 font-medium">Número</th>
-              <th className="text-left px-4 py-3 font-medium">Cliente</th>
-              <th className="text-left px-4 py-3 font-medium">Producto</th>
-              <th className="text-right px-4 py-3 font-medium">Cantidad</th>
-              <th className="text-left px-4 py-3 font-medium">Fecha</th>
-              <th className="text-center px-4 py-3 font-medium">Estado</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y">
-            {cotizaciones && cotizaciones.length > 0 ? (
-              cotizaciones.map((c: any) => (
-                <tr key={c.id} className="hover:bg-muted/30">
-                  <td className="px-4 py-3">
+      {cotizaciones && cotizaciones.length > 0 ? (
+        <div className="card overflow-hidden">
+          <table className="data-table">
+            <thead>
+              <tr>
+                <th>Número</th>
+                <th>Cliente</th>
+                <th>Producto</th>
+                <th className="text-right">Cantidad</th>
+                <th>Fecha</th>
+                <th className="text-center">Estado</th>
+              </tr>
+            </thead>
+            <tbody>
+              {cotizaciones.map((c: any) => (
+                <tr key={c.id}>
+                  <td>
                     <Link
                       href={`/cotizaciones/${c.id}`}
-                      className="font-mono text-xs font-medium hover:underline"
+                      className="font-mono text-[11px] font-medium text-ink hover:text-olive-700 transition-colors"
                     >
                       {c.numero}
                     </Link>
                   </td>
-                  <td className="px-4 py-3">
-                    {c.clientes?.nombre ?? (
-                      <span className="text-muted-foreground italic">Sin cliente</span>
+                  <td>
+                    {c.clientes?.nombre ? (
+                      <span className="text-sm text-ink">{c.clientes.nombre}</span>
+                    ) : (
+                      <span className="text-sm text-ink-subtle italic">Sin cliente</span>
                     )}
                   </td>
-                  <td className="px-4 py-3">
-                    <div className="font-medium">{c.productos?.nombre}</div>
+                  <td>
+                    <div className="font-medium text-ink text-sm">
+                      {c.productos?.nombre}
+                    </div>
                     {c.productos?.presentacion && (
-                      <div className="text-xs text-muted-foreground">
+                      <div className="text-xs text-ink-mute mt-0.5">
                         {c.productos.presentacion}
                       </div>
                     )}
                   </td>
-                  <td className="px-4 py-3 text-right tabular-nums">
-                    {c.cantidad.toLocaleString("es-CL")}
+                  <td className="text-right">
+                    <span className="font-mono text-sm text-ink tabular-nums">
+                      {c.cantidad.toLocaleString("es-CL")}
+                    </span>
                   </td>
-                  <td className="px-4 py-3 text-muted-foreground">
-                    {new Date(c.fecha_cotizacion).toLocaleDateString("es-CL")}
+                  <td className="text-ink-mute text-sm">
+                    {new Date(c.fecha_cotizacion).toLocaleDateString("es-CL", {
+                      day: "numeric",
+                      month: "short",
+                      year: "numeric",
+                    })}
                   </td>
-                  <td className="px-4 py-3 text-center">
+                  <td className="text-center">
                     <span
-                      className={`inline-block px-2 py-0.5 text-xs font-medium rounded ${
-                        ESTADO_BADGE[c.estado] ?? "bg-gray-100"
-                      }`}
+                      className={
+                        ESTADO_BADGE[c.estado as keyof typeof ESTADO_BADGE] ?? "badge-neutral"
+                      }
                     >
-                      {ESTADOS_COTIZACION_LABEL[c.estado as keyof typeof ESTADOS_COTIZACION_LABEL]}
+                      {
+                        ESTADOS_COTIZACION_LABEL[
+                          c.estado as keyof typeof ESTADOS_COTIZACION_LABEL
+                        ]
+                      }
                     </span>
                   </td>
                 </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan={6} className="px-4 py-12 text-center text-muted-foreground">
-                  Aún no hay cotizaciones.{" "}
-                  <Link href="/simulador" className="text-foreground underline">
-                    Crear desde el simulador
-                  </Link>
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : (
+        <EmptyState
+          icon={ClipboardList}
+          title="Aún no hay cotizaciones"
+          description="Crea la primera cotización desde el simulador. Antes de comprometer un plazo con el cliente, calcula los insumos disponibles."
+          actionHref="/simulador"
+          actionLabel="Abrir simulador"
+        />
+      )}
     </div>
   );
 }

@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { InsumoForm } from "@/components/insumo-form";
+import { PageHeader } from "@/components/page-header";
 import type { CategoriaInsumo, Proveedor } from "@/types";
 
 export default async function NuevoInsumoPage() {
@@ -10,13 +11,15 @@ export default async function NuevoInsumoPage() {
   ]);
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-medium tracking-tight">Nuevo insumo</h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          Agrega una materia prima, envase o material
-        </p>
-      </div>
+    <div>
+      <PageHeader
+        breadcrumbs={[
+          { label: "Insumos", href: "/insumos" },
+          { label: "Nuevo" },
+        ]}
+        title="Nuevo insumo"
+        description="Agrega una materia prima, envase o material al inventario."
+      />
       <InsumoForm
         categorias={(categorias as CategoriaInsumo[]) ?? []}
         proveedores={(proveedores as Proveedor[]) ?? []}

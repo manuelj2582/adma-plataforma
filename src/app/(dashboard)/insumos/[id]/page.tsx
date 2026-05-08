@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { InsumoForm } from "@/components/insumo-form";
+import { PageHeader } from "@/components/page-header";
 import { notFound } from "next/navigation";
 import type { CategoriaInsumo, Proveedor, Insumo } from "@/types";
 
@@ -21,13 +22,15 @@ export default async function EditarInsumoPage({
   if (!insumo) notFound();
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-medium tracking-tight">{insumo.nombre}</h1>
-        <p className="text-sm text-muted-foreground mt-1 font-mono">
-          {insumo.codigo}
-        </p>
-      </div>
+    <div>
+      <PageHeader
+        breadcrumbs={[
+          { label: "Insumos", href: "/insumos" },
+          { label: insumo.codigo },
+        ]}
+        label={insumo.codigo}
+        title={insumo.nombre}
+      />
       <InsumoForm
         insumo={insumo as Insumo}
         categorias={(categorias as CategoriaInsumo[]) ?? []}
